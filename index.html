@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solar Monitor Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2f80ed;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    .card {
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 10px;
+      background-color: #e8f0fe;
+      border-left: 6px solid #2f80ed;
+    }
+    .title {
+      font-weight: bold;
+      color: #333;
+    }
+    .value {
+      font-size: 28px;
+      color: #2f80ed;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>☀️ Solar Energy Monitor Dashboard</header>
+
+  <div class="container">
+    <div class="card">
+      <div class="title">Battery Voltage</div>
+      <div id="battery" class="value">-- V</div>
+    </div>
+    <div class="card">
+      <div class="title">Solar Panel Voltage</div>
+      <div id="solar" class="value">-- V</div>
+    </div>
+    <div class="card">
+      <div class="title">Light Intensity</div>
+      <div id="light" class="value">-- %</div>
+    </div>
+  </div>
+
+  <!-- Firebase App SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+    apiKey: "AIzaSyAuPymUKJvdMlaYVDp0LBkKKTi4L2t-hxA",
+    authDomain: "solarproject-6876c.firebaseapp.com",
+    databaseURL: "https://solarproject-6876c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "solarproject-6876c",
+    storageBucket: "solarproject-6876c.firebasestorage.app",
+    messagingSenderId: "25664871576",
+    appId: "1:25664871576:web:6488f37c99c4f136cbc4ed",
+    measurementId: "G-QYPY651MT1"
+  };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Listen for data changes
+    db.ref("solarSystem").on("value", (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        document.getElementById("battery").textContent = `${data.batteryVoltage.toFixed(2)} V`;
+        document.getElementById("solar").textContent = `${data.solarVoltage.toFixed(2)} V`;
+        document.getElementById("light").textContent = `${data.lightIntensity.toFixed(2)} %`;
+      }
+    });
+  </script>
+</body>
+</html>
