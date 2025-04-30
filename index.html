@@ -2,96 +2,612 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solar Monitor Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
+    :root {
+      --primary-color: #2d87f0;
+      --secondary-color: #6a11cb;
+      --dark-color: #2c3e50;
+      --light-color: #ecf0f1;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+      --danger-color: #e74c3c;
+    }
+    
+    /* General body styles */
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f7fa;
+      font-family: 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
-    }
-    header {
-      background-color: #2f80ed;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 24px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    }
-    .card {
-      padding: 20px;
-      margin: 20px 0;
-      border-radius: 10px;
-      background-color: #e8f0fe;
-      border-left: 6px solid #2f80ed;
-    }
-    .title {
-      font-weight: bold;
+      background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
       color: #333;
+      min-height: 100vh;
     }
-    .value {
+
+    /* Header styles */
+    header {
+      background-color: rgba(45, 52, 54, 0.9);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
       font-size: 28px;
-      color: #2f80ed;
-      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
+      position: relative;
+      backdrop-filter: blur(5px);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .last-updated {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* Main container */
+    .main-container {
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Dashboard grid */
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    /* Card styles */
+    .card {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      padding: 25px;
+      transition: all 0.3s ease-in-out;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--dark-color);
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .card-value {
+      font-size: 42px;
+      font-weight: 700;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    .card-unit {
+      font-size: 16px;
+      font-weight: 400;
+      opacity: 0.7;
+    }
+
+    .card-footer {
+      margin-top: auto;
+      font-size: 14px;
+      color: #7f8c8d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Status indicators */
+    .status {
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-good {
+      background-color: rgba(46, 204, 113, 0.2);
+      color: var(--success-color);
+    }
+
+    .status-warning {
+      background-color: rgba(241, 196, 15, 0.2);
+      color: var(--warning-color);
+    }
+
+    .status-danger {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: var(--danger-color);
+    }
+
+    /* Chart container */
+    .chart-container {
+      grid-column: 1 / -1;
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      padding: 25px;
+      height: 350px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--dark-color);
+    }
+
+    .chart-timeframe {
+      display: flex;
+      gap: 10px;
+    }
+
+    .timeframe-btn {
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.05);
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .timeframe-btn.active {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      header {
+        font-size: 22px;
+        padding: 15px 0;
+      }
+      
+      .header-content {
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      .last-updated {
+        position: static;
+        transform: none;
+        margin-top: 5px;
+      }
+      
+      .card {
+        padding: 20px;
+      }
+      
+      .card-value {
+        font-size: 36px;
+      }
+
+      .chart-timeframe {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        font-size: 20px;
+      }
+      
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+      
+      .card-value {
+        font-size: 32px;
+      }
+    }
+
+    /* Animation */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* Loading state */
+    .loading {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
   </style>
 </head>
 <body>
 
-  <header>☀️ Solar Energy Monitor Dashboard</header>
+  <header>
+    <div class="header-content">
+      <i class="fas fa-solar-panel"></i>
+      <h1>Solar Energy Monitor</h1>
+    </div>
+    <div class="last-updated" id="lastUpdated">Last updated: --</div>
+  </header>
 
-  <div class="container">
-    <div class="card">
-      <div class="title">Battery Voltage</div>
-      <div id="battery" class="value">-- V</div>
-    </div>
-    <div class="card">
-      <div class="title">Solar Panel Voltage</div>
-      <div id="solar" class="value">-- V</div>
-    </div>
-    <div class="card">
-      <div class="title">Light Intensity</div>
-      <div id="light" class="value">-- %</div>
+  <div class="main-container">
+    <div class="dashboard">
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-battery-three-quarters"></i>
+          <span>Battery Voltage</span>
+        </div>
+        <div class="card-value" id="battery">-- <span class="card-unit">V</span></div>
+        <div class="card-footer">
+          <span>Status: <span class="status" id="batteryStatus">--</span></span>
+          <span>Optimal: 12.0V - 14.4V</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-sun"></i>
+          <span>Solar Panel Voltage</span>
+        </div>
+        <div class="card-value" id="solar">-- <span class="card-unit">V</span></div>
+        <div class="card-footer">
+          <span>Status: <span class="status" id="solarStatus">--</span></span>
+          <span>Optimal: 17.0V - 21.0V</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-lightbulb"></i>
+          <span>Light Intensity</span>
+        </div>
+        <div class="card-value" id="light">-- <span class="card-unit">%</span></div>
+        <div class="card-footer">
+          <span>Status: <span class="status" id="lightStatus">--</span></span>
+          <span>Current conditions</span>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">Performance Over Time</h3>
+          <div class="chart-timeframe">
+            <button class="timeframe-btn active" data-timeframe="1h">1 Hour</button>
+            <button class="timeframe-btn" data-timeframe="6h">6 Hours</button>
+            <button class="timeframe-btn" data-timeframe="24h">24 Hours</button>
+          </div>
+        </div>
+        <canvas id="performanceChart"></canvas>
+      </div>
     </div>
   </div>
 
   <!-- Firebase App SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
     // Your Firebase config
     const firebaseConfig = {
-    apiKey: "AIzaSyAuPymUKJvdMlaYVDp0LBkKKTi4L2t-hxA",
-    authDomain: "solarproject-6876c.firebaseapp.com",
-    databaseURL: "https://solarproject-6876c-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "solarproject-6876c",
-    storageBucket: "solarproject-6876c.firebasestorage.app",
-    messagingSenderId: "25664871576",
-    appId: "1:25664871576:web:6488f37c99c4f136cbc4ed",
-    measurementId: "G-QYPY651MT1"
-  };
+      apiKey: "AIzaSyAuPymUKJvdMlaYVDp0LBkKKTi4L2t-hxA",
+      authDomain: "solarproject-6876c.firebaseapp.com",
+      databaseURL: "https://solarproject-6876c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "solarproject-6876c",
+      storageBucket: "solarproject-6876c.firebasestorage.app",
+      messagingSenderId: "25664871576",
+      appId: "1:25664871576:web:6488f37c99c4f136cbc4ed",
+      measurementId: "G-QYPY651MT1"
+    };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // Data storage for chart
+    const chartData = {
+      timestamps: [],
+      batteryVoltages: [],
+      solarVoltages: [],
+      lightIntensities: [],
+      maxDataPoints: 60 // Store up to 60 data points (1 per minute for 1 hour)
+    };
+
+    // Format timestamp
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString() + ' ' + date.toLocaleDateString();
+    }
+
+    // Format time for chart labels
+    function formatChartTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Determine status
+    function getBatteryStatus(voltage) {
+      if (voltage >= 12.0 && voltage <= 14.4) return ['status-good', 'Good'];
+      if (voltage > 14.4) return ['status-warning', 'Overcharge'];
+      if (voltage < 12.0) return ['status-danger', 'Low'];
+      return ['', 'Unknown'];
+    }
+
+    function getSolarStatus(voltage) {
+      if (voltage >= 17.0 && voltage <= 21.0) return ['status-good', 'Optimal'];
+      if (voltage < 17.0) return ['status-warning', 'Low'];
+      return ['', 'Unknown'];
+    }
+
+    function getLightStatus(intensity) {
+      if (intensity > 70) return ['status-good', 'High'];
+      if (intensity > 30) return ['status-warning', 'Medium'];
+      return ['status-danger', 'Low'];
+    }
+
+    // Initialize chart
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Battery Voltage (V)',
+            data: [],
+            borderColor: '#2d87f0',
+            backgroundColor: 'rgba(45, 135, 240, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'Solar Voltage (V)',
+            data: [],
+            borderColor: '#f39c12',
+            backgroundColor: 'rgba(243, 156, 18, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true
+          },
+          {
+            label: 'Light Intensity (%)',
+            data: [],
+            borderColor: '#27ae60',
+            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 10
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Voltage (V)'
+            },
+            min: 0,
+            max: 25,
+            position: 'left'
+          },
+          y1: {
+            title: {
+              display: true,
+              text: 'Intensity (%)'
+            },
+            min: 0,
+            max: 100,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false
+            }
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          tooltip: {
+            mode: 'index',
+            intersect: false
+          },
+          legend: {
+            position: 'top',
+            align: 'end'
+          }
+        }
+      }
+    });
+
+    // Update chart with new data
+    function updateChart() {
+      // Limit data points to prevent performance issues
+      if (chartData.timestamps.length > chartData.maxDataPoints) {
+        chartData.timestamps.shift();
+        chartData.batteryVoltages.shift();
+        chartData.solarVoltages.shift();
+        chartData.lightIntensities.shift();
+      }
+
+      // Format labels for the x-axis
+      const labels = chartData.timestamps.map(t => formatChartTime(t));
+
+      // Update chart data
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = chartData.batteryVoltages;
+      chart.data.datasets[1].data = chartData.solarVoltages;
+      chart.data.datasets[2].data = chartData.lightIntensities;
+      chart.update();
+    }
+
+    // Handle timeframe selection
+    document.querySelectorAll('.timeframe-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update max data points based on selection
+        const timeframe = this.dataset.timeframe;
+        if (timeframe === '1h') {
+          chartData.maxDataPoints = 60; // 1 point per minute for 1 hour
+        } else if (timeframe === '6h') {
+          chartData.maxDataPoints = 72; // 1 point every 5 minutes for 6 hours
+        } else if (timeframe === '24h') {
+          chartData.maxDataPoints = 96; // 1 point every 15 minutes for 24 hours
+        }
+        
+        // Trim data if needed
+        while (chartData.timestamps.length > chartData.maxDataPoints) {
+          chartData.timestamps.shift();
+          chartData.batteryVoltages.shift();
+          chartData.solarVoltages.shift();
+          chartData.lightIntensities.shift();
+        }
+        
+        updateChart();
+      });
+    });
+
     // Listen for data changes
     db.ref("solarSystem").on("value", (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        document.getElementById("battery").textContent = `${data.batteryVoltage.toFixed(2)} V`;
-        document.getElementById("solar").textContent = `${data.solarVoltage.toFixed(2)} V`;
-        document.getElementById("light").textContent = `${data.lightIntensity.toFixed(2)} %`;
+        const now = Date.now();
+        
+        // Update last updated time
+        document.getElementById("lastUpdated").textContent = `Last updated: ${formatTime(now)}`;
+        
+        // Store data for chart
+        chartData.timestamps.push(now);
+        chartData.batteryVoltages.push(data.batteryVoltage);
+        chartData.solarVoltages.push(data.solarVoltage);
+        chartData.lightIntensities.push(data.lightIntensity);
+        
+        // Update chart
+        updateChart();
+        
+        // Battery
+        const batteryVoltage = data.batteryVoltage.toFixed(2);
+        document.getElementById("battery").innerHTML = `${batteryVoltage} <span class="card-unit">V</span>`;
+        const [batteryStatusClass, batteryStatusText] = getBatteryStatus(parseFloat(batteryVoltage));
+        const batteryStatusEl = document.getElementById("batteryStatus");
+        batteryStatusEl.className = `status ${batteryStatusClass}`;
+        batteryStatusEl.textContent = batteryStatusText;
+        
+        // Solar
+        const solarVoltage = data.solarVoltage.toFixed(2);
+        document.getElementById("solar").innerHTML = `${solarVoltage} <span class="card-unit">V</span>`;
+        const [solarStatusClass, solarStatusText] = getSolarStatus(parseFloat(solarVoltage));
+        const solarStatusEl = document.getElementById("solarStatus");
+        solarStatusEl.className = `status ${solarStatusClass}`;
+        solarStatusEl.textContent = solarStatusText;
+        
+        // Light
+        const lightIntensity = data.lightIntensity.toFixed(2);
+        document.getElementById("light").innerHTML = `${lightIntensity} <span class="card-unit">%</span>`;
+        const [lightStatusClass, lightStatusText] = getLightStatus(parseFloat(lightIntensity));
+        const lightStatusEl = document.getElementById("lightStatus");
+        lightStatusEl.className = `status ${lightStatusClass}`;
+        lightStatusEl.textContent = lightStatusText;
+        
+        // Add pulse animation when values change
+        document.getElementById("battery").classList.add('pulse');
+        document.getElementById("solar").classList.add('pulse');
+        document.getElementById("light").classList.add('pulse');
+        
+        setTimeout(() => {
+          document.getElementById("battery").classList.remove('pulse');
+          document.getElementById("solar").classList.remove('pulse');
+          document.getElementById("light").classList.remove('pulse');
+        }, 2000);
       }
+    });
+
+    // Handle offline/online status
+    window.addEventListener('online', () => {
+      console.log('Connection restored');
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('Connection lost');
     });
   </script>
 </body>
